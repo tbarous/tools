@@ -6,8 +6,6 @@ export const injectGlobal: any = (store: any, storeName?: string) => {
     return {
       init() {
         autorun(() => {
-          if (!root?.globalContainer?.resolveStore) return
-
           // @ts-ignore
           this[name] = root.globalContainer.resolveStore(storeName || store)
         })
