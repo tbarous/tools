@@ -1,20 +1,15 @@
-import { observable, action, autorun, runInAction } from 'mobx';
+import { observable, action, autorun } from 'mobx';
 import React, { createContext, useContext } from 'react';
 
 const injectable = (value, { kind, name }) => {
     if (kind === 'class') {
         const store = class extends value {
             constructor(...args) {
-                // @ts-ignore
                 super(...args);
-                this.container = args[0];
+                this.container = args === null || args === void 0 ? void 0 : args[0].container;
             }
         };
-        Object.defineProperties(store, {
-            name: {
-                value: name,
-            },
-        });
+        Object.defineProperty(store, 'name', { value, writable: true });
         return store;
     }
 };
@@ -99,14 +94,15 @@ let Container = (() => {
             get stores() { return __classPrivateFieldGet(this, _Container_stores_accessor_storage, "f"); }
             set stores(value) { __classPrivateFieldSet(this, _Container_stores_accessor_storage, value, "f"); }
             register(store, props) {
+                if (this.stores.has(store.name))
+                    return;
                 this.stores.set(store.name, new store(Object.assign({ container: this }, props)));
             }
             resolve(store) {
                 const resolved = this.stores.get(store.name);
-                console.log({ resolved }, store.name, this.stores);
                 if (!resolved)
                     return;
-                return this.stores.get(store.name);
+                return resolved;
             }
             constructor() {
                 this.id = (__runInitializers(this, _instanceExtraInitializers), Symbol());
@@ -169,16 +165,13 @@ const inject = (store) => {
     return function (value, { kind, name }) {
         return {
             init() {
-                console.log({ name });
                 autorun(() => {
                     var _a, _b;
                     // @ts-ignore
                     const resolvedStore = (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.resolve) === null || _b === void 0 ? void 0 : _b.call(_a, store);
                     if (resolvedStore) {
-                        runInAction(() => {
-                            // @ts-ignore
-                            this[name] = resolvedStore;
-                        });
+                        // @ts-ignore
+                        this[name] = resolvedStore;
                     }
                 });
             },

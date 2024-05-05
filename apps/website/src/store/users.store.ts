@@ -13,7 +13,7 @@ export class UsersStore {
   @action
   setName(name: string) {
     this.name = name
-    console.log(this.productsStore)
-    // this.productsStore.setName('Products name')
+    console.log(this.productsStore, 22)
+    this.productsStore?.setName('Products name')
   }
 }

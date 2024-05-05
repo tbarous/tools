@@ -6,14 +6,16 @@ export class Container {
 
   @action
   register(store: any, props?: any) {
+    if (this.stores.has(store.name)) return
+
     this.stores.set(store.name, new store({ container: this, ...props }))
   }
 
-  resolve(store: any) {
+  public resolve(store: any) {
     const resolved = this.stores.get(store.name)
-    console.log({ resolved }, store.name, this.stores)
+
     if (!resolved) return
 
-    return this.stores.get(store.name)
+    return resolved
   }
 }
