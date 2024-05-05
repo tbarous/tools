@@ -96,6 +96,8 @@ importers:
         specifier: ^5.2.0
         version: 5.2.0
 
+  packages/components: {}
+
   packages/di:
     devDependencies:
       '@babel/plugin-proposal-decorators':

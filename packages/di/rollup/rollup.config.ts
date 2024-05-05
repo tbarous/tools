@@ -20,7 +20,7 @@ export const build = (): RollupOptions[] => [
     plugins: [commonjs(), typescript(), babel({ babelHelpers: 'bundled' })],
   },
   {
-    input: './src/types.ts',
+    input: './src/index.ts',
     output: [{ file: 'dist/index.d.ts', format: 'es' }],
     plugins: [dts()],
   },

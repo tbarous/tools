@@ -1,9 +1,17 @@
-type ClassDecorator = (value: {
-    new (): any;
-}, context: {
-    kind: 'class';
-    name: string | undefined;
-    addInitializer(initializer: () => void): void;
-}) => Function | void;
+declare const injectable: any;
 
-export type { ClassDecorator };
+declare class Container {
+    id: symbol;
+    stores: Map<string, any>;
+    register(store: any, props?: any): void;
+    resolve(store: any): any;
+}
+
+declare class Containers {
+    containers: Container[];
+    register(container: Container): void;
+    resolve(id: symbol): Container | undefined;
+}
+declare const containers: Containers;
+
+export { Container, Containers, containers, injectable };

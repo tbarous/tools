@@ -1,5 +1,3 @@
-import { User } from './user'
-
-export const a = '2'
-
-export const user = new User('Joe')
+export * from './injectable'
+export * from './containers'
+export * from './container'
