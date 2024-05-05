@@ -1,15 +1,17 @@
+import React, { ReactNode } from 'react';
+
 declare const injectable: any;
 
 declare class Container {
     id: symbol;
-    stores: Map<string, any>;
+    accessor stores: Map<string, any>;
     register(store: any, props?: any): void;
     resolve(store: any): any;
 }
 
 declare class Containers {
-    containers: Container[];
-    register(container: Container): void;
+    accessor containers: Container[];
+    register(stores: any[]): symbol;
     resolve(id: symbol): Container | undefined;
 }
 declare const containers: Containers;
@@ -35,4 +37,12 @@ type ClassAutoAccessorDecorator = (value: {
 
 declare const inject: (store: any) => ClassAutoAccessorDecorator;
 
-export { Container, Containers, containers, inject, injectable };
+declare const ContainerContext: React.Context<symbol>;
+declare const ContainerProvider: ({ id, children, }: {
+    id: Container['id'];
+    children: ReactNode;
+}) => React.JSX.Element;
+
+declare function useInjection(store: any): any;
+
+export { Container, ContainerContext, ContainerProvider, Containers, containers, inject, injectable, useInjection };

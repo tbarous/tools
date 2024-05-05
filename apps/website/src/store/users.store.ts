@@ -6,15 +6,14 @@ import { ProductsStore } from './products.store.ts'
 export class UsersStore {
   @observable accessor name: string = ''
 
-  // @ts-ignore
-  @inject(ProductsStore) productsStore: ProductsStore
+  @inject(ProductsStore) accessor productsStore: ProductsStore
 
   constructor() {}
 
   @action
   setName(name: string) {
     this.name = name
-    console.log(this.container)
+    console.log(this.productsStore)
     // this.productsStore.setName('Products name')
   }
 }

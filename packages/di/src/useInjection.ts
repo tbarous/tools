@@ -1,6 +1,6 @@
 import { useContext } from 'react'
-import { ContainerContext } from './ContainerProvider.tsx'
-import { containers } from '@tbarous/di'
+import { ContainerContext } from './ContainerProvider'
+import { containers } from './containers'
 
 export function useInjection(store: any) {
   const id = useContext(ContainerContext)

@@ -1,6 +1,7 @@
 import { action, observable } from 'mobx'
+import { injectable } from '@tbarous/di'
 
-// @injectable
+@injectable
 export class ProductsStore {
   @observable accessor name: string = ''
 

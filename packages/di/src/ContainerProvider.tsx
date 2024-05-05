@@ -1,5 +1,5 @@
-import { createContext, ReactNode } from 'react'
-import { Container } from '@tbarous/di'
+import React, { createContext, ReactNode } from 'react'
+import { Container } from './container'
 
 export const ContainerContext = createContext<symbol>(Symbol())
 

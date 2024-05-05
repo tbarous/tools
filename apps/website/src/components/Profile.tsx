@@ -1,7 +1,7 @@
-import { useInjection } from './useInjection.ts'
-import { UsersStore } from './store/users.store.ts'
+import { useInjection } from '@tbarous/di'
+import { UsersStore } from '../store/users.store.ts'
 import { observer } from 'mobx-react-lite'
-import { ProductsStore } from './store/products.store.ts'
+import { ProductsStore } from '../store/products.store.ts'
 
 export const Profile = observer(() => {
   const userStore = useInjection(UsersStore)
