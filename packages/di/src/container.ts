@@ -3,7 +3,7 @@ export class Container {
   stores: Map<string, any> = new Map()
 
   register(store: any, props?: any) {
-    this.stores.set(store.name, new store(props))
+    this.stores.set(store.name, new store({ container: this, ...props }))
   }
 
   resolve(store: any) {

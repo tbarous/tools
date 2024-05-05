@@ -6,9 +6,9 @@ export const injectable: any = (value: any, { kind, name }: any) => {
       constructor(...args: any[]) {
         // @ts-ignore
         super(...args)
-        console.log(
-          `constructing an instance of ${name} with arguments ${args.join(', ')}`
-        )
+        console.log({ args })
+
+        this.container = args[0]
       }
     }
   }

@@ -6,7 +6,8 @@ const injectable = (value, { kind, name }) => {
             constructor(...args) {
                 // @ts-ignore
                 super(...args);
-                console.log(`constructing an instance of ${name} with arguments ${args.join(', ')}`);
+                console.log({ args });
+                this.container = args[0];
             }
         };
     }
@@ -31,14 +32,30 @@ class Container {
         this.stores = new Map();
     }
     register(store, props) {
-        this.stores.set(store.name, new store(props));
+        this.stores.set(store.name, new store(Object.assign({ container: this }, props)));
     }
     resolve(store) {
         return this.stores.get(store.name);
     }
 }
 
+const inject = (store) => {
+    return function (value, { kind, name }) {
+        if (kind === 'accessor') {
+            return {
+                init() {
+                    // @ts-ignore
+                    const resolvedStore = this.container.resolve(store);
+                    console.log({ resolvedStore });
+                    return resolvedStore;
+                },
+            };
+        }
+    };
+};
+
 exports.Container = Container;
 exports.Containers = Containers;
 exports.containers = containers;
+exports.inject = inject;
 exports.injectable = injectable;

@@ -1,14 +1,17 @@
-import { ClassDecorator } from './types'
+import { ClassAutoAccessorDecorator } from './types'
 
-export const logged: ClassDecorator = (value, { kind, name }) => {
-  if (kind === 'class') {
-    return class extends value {
-      constructor(...args: any[]) {
-        // @ts-ignore
-        super(...args)
-        console.log(
-          `constructing an instance of ${name} with arguments ${args.join(', ')}`
-        )
+export const inject: (store: any) => ClassAutoAccessorDecorator = (
+  store: any
+) => {
+  return function (value, { kind, name }) {
+    if (kind === 'accessor') {
+      return {
+        init() {
+          // @ts-ignore
+          const resolvedStore = this.container.resolve(store)
+          console.log({ resolvedStore })
+          return resolvedStore
+        },
       }
     }
   }

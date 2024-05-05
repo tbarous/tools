@@ -1,7 +1,7 @@
 import { action, observable } from 'mobx'
 
 // @injectable
-export class UserStore {
+export class ProductsStore {
   @observable accessor name: string = ''
 
   constructor() {}

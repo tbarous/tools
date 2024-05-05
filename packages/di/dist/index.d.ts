@@ -14,4 +14,25 @@ declare class Containers {
 }
 declare const containers: Containers;
 
-export { Container, Containers, containers, injectable };
+type ClassAutoAccessorDecorator = (value: {
+    get: () => unknown;
+    set(value: unknown): void;
+}, context: {
+    kind: 'accessor';
+    name: string | symbol;
+    access: {
+        get(): unknown;
+        set(value: unknown): void;
+    };
+    static: boolean;
+    private: boolean;
+    addInitializer(initializer: () => void): void;
+}) => {
+    get?: () => unknown;
+    set?: (value: unknown) => void;
+    init?: (initialValue: unknown) => unknown;
+} | void;
+
+declare const inject: (store: any) => ClassAutoAccessorDecorator;
+
+export { Container, Containers, containers, inject, injectable };
