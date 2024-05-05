@@ -192,11 +192,17 @@ function useInjection(store) {
     return container === null || container === void 0 ? void 0 : container.resolve(store);
 }
 
+function createInjectableComponent(Component, stores) {
+    return () => (React.createElement(ContainerProvider, { id: containers.register(stores) },
+        React.createElement(Component, null)));
+}
+
 exports.Container = Container;
 exports.ContainerContext = ContainerContext;
 exports.ContainerProvider = ContainerProvider;
 exports.Containers = Containers;
 exports.containers = containers;
+exports.createInjectableComponent = createInjectableComponent;
 exports.inject = inject;
 exports.injectable = injectable;
 exports.useInjection = useInjection;

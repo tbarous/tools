@@ -26,4 +26,6 @@ declare const ContainerProvider: ({ id, children, }: {
 
 declare function useInjection(store: any): any;
 
-export { Container, ContainerContext, ContainerProvider, Containers, containers, inject, injectable, useInjection };
+declare function createInjectableComponent(Component: any, stores: any): () => React.JSX.Element;
+
+export { Container, ContainerContext, ContainerProvider, Containers, containers, createInjectableComponent, inject, injectable, useInjection };

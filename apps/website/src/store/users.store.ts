@@ -8,11 +8,9 @@ export class UsersStore {
 
   @inject(ProductsStore) accessor productsStore: ProductsStore
 
-  constructor() {}
-
   @action
   setName(name: string) {
     this.name = name
-    this.productsStore?.setName('Products name')
+    this.productsStore.setName('Products name')
   }
 }
