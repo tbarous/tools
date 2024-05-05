@@ -1,8 +1,5 @@
 import { expect, test } from 'vitest'
-import { root } from '../src'
-import { Stores } from './enums/stores.enums'
-import { ProductsStore } from './stores/products.store'
-import { UsersStore } from './stores/users.store'
+import { ProductsStore, root, Stores, UsersStore } from '../src'
 
 test('Decorator works', () => {
   const container = root.createContainer(
