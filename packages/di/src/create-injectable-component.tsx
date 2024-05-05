@@ -1,11 +1,16 @@
 import { ContainerProvider } from './ContainerProvider'
-import React from 'react'
-import { containers } from './containers'
+import React, { FunctionComponent, ReactElement } from 'react'
+import { root } from './root'
+import { IStoresToBeInjected } from './types'
 
-export function createInjectableComponent(Component: any, stores: any) {
-  return () => (
-    <ContainerProvider id={containers.register(stores)}>
+export const createInjectableComponent =
+  <P,>(
+    Component: FunctionComponent,
+    stores: IStoresToBeInjected,
+    props: P
+  ): (() => ReactElement) =>
+  () => (
+    <ContainerProvider id={root.createContainer(stores, props).id}>
       <Component />
     </ContainerProvider>
   )
-}

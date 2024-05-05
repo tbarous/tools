@@ -1,5 +1,5 @@
 import { action, observable } from 'mobx'
-import { injectable } from '@tbarous/di'
+import { injectable } from '../../src'
 
 @injectable
 export class ProductsStore {

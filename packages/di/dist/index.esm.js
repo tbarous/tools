@@ -1,17 +1,18 @@
 import { observable, action, autorun } from 'mobx';
 import React, { createContext, useContext } from 'react';
+import { observer } from 'mobx-react-lite';
 
-const injectable = (value, { kind, name }) => {
-    if (kind === 'class') {
-        const store = class extends value {
-            constructor(...args) {
-                super(...args);
-                this.container = args === null || args === void 0 ? void 0 : args[0].container;
-            }
-        };
-        Object.defineProperty(store, 'name', { value, writable: true });
-        return store;
-    }
+const injectable = (value, { kind, name: n }) => {
+    if (kind !== 'class')
+        return;
+    const store = class extends value {
+        constructor(args) {
+            super(args);
+            this.container = args.container;
+        }
+    };
+    Object.defineProperty(store, 'name', { value: n, writable: true });
+    return store;
 };
 
 function _typeof(o) {
@@ -31,8 +32,8 @@ function __esDecorate(ctor, descriptorIn, decorators, contextIn, initializers, e
   }
   var kind = contextIn.kind,
     key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
-  var target = ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
-  var descriptor = (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
+  var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
+  var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
   var _,
     done = false;
   for (var i = decorators.length - 1; i >= 0; i--) {
@@ -67,6 +68,13 @@ function __runInitializers(thisArg, initializers, value) {
   }
   return useValue ? value : void 0;
 }
+function __setFunctionName(f, name, prefix) {
+  if (_typeof(name) === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
+  return Object.defineProperty(f, "name", {
+    configurable: true,
+    value: name
+  });
+}
 function __classPrivateFieldGet(receiver, state, kind, f) {
   if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
   if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
@@ -83,92 +91,133 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
   return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
 };
 
+const isDetailedStore = (store) => 'store' in store && 'name' in store;
+const getDetailedStore = (store) => {
+    if (typeof store === 'string') {
+        return { name: store };
+    }
+    if (!isDetailedStore(store)) {
+        return { store, name: store.name };
+    }
+    return store;
+};
+
 let Container = (() => {
-    var _a, _Container_stores_accessor_storage;
+    var _a, _Container_id_accessor_storage, _Container_stores_accessor_storage, _Container_props_accessor_storage;
     let _instanceExtraInitializers = [];
+    let _id_decorators;
+    let _id_initializers = [];
+    let _id_extraInitializers = [];
     let _stores_decorators;
     let _stores_initializers = [];
     let _stores_extraInitializers = [];
-    let _register_decorators;
+    let _props_decorators;
+    let _props_initializers = [];
+    let _props_extraInitializers = [];
+    let _registerStores_decorators;
     return _a = class Container {
+            get id() { return __classPrivateFieldGet(this, _Container_id_accessor_storage, "f"); }
+            set id(value) { __classPrivateFieldSet(this, _Container_id_accessor_storage, value, "f"); }
             get stores() { return __classPrivateFieldGet(this, _Container_stores_accessor_storage, "f"); }
             set stores(value) { __classPrivateFieldSet(this, _Container_stores_accessor_storage, value, "f"); }
-            register(store, props) {
-                if (this.stores.has(store.name))
-                    return;
-                this.stores.set(store.name, new store(Object.assign({ container: this }, props)));
+            get props() { return __classPrivateFieldGet(this, _Container_props_accessor_storage, "f"); }
+            set props(value) { __classPrivateFieldSet(this, _Container_props_accessor_storage, value, "f"); }
+            registerStores(stores, props) {
+                for (const store of stores) {
+                    const { name, store: Store } = getDetailedStore(store);
+                    if (this.stores.has(name) || !Store)
+                        return;
+                    const instance = new Store(Object.assign({ container: this }, props));
+                    this.stores.set(name, instance);
+                }
             }
-            resolve(store) {
-                const resolved = this.stores.get(store.name);
-                if (!resolved)
+            resolveStore(store) {
+                const { name } = getDetailedStore(store);
+                if (!this.stores.has(name))
                     return;
-                return resolved;
+                return this.stores.get(name);
             }
             constructor() {
-                this.id = (__runInitializers(this, _instanceExtraInitializers), Symbol());
-                _Container_stores_accessor_storage.set(this, __runInitializers(this, _stores_initializers, new Map()));
-                __runInitializers(this, _stores_extraInitializers);
+                _Container_id_accessor_storage.set(this, (__runInitializers(this, _instanceExtraInitializers), __runInitializers(this, _id_initializers, Symbol())));
+                _Container_stores_accessor_storage.set(this, (__runInitializers(this, _id_extraInitializers), __runInitializers(this, _stores_initializers, new Map())));
+                _Container_props_accessor_storage.set(this, (__runInitializers(this, _stores_extraInitializers), __runInitializers(this, _props_initializers, void 0)));
+                __runInitializers(this, _props_extraInitializers);
             }
         },
+        _Container_id_accessor_storage = new WeakMap(),
         _Container_stores_accessor_storage = new WeakMap(),
+        _Container_props_accessor_storage = new WeakMap(),
         (() => {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
+            _id_decorators = [observable];
             _stores_decorators = [observable];
-            _register_decorators = [action];
+            _props_decorators = [observable];
+            _registerStores_decorators = [action];
+            __esDecorate(_a, null, _id_decorators, { kind: "accessor", name: "id", static: false, private: false, access: { has: obj => "id" in obj, get: obj => obj.id, set: (obj, value) => { obj.id = value; } }, metadata: _metadata }, _id_initializers, _id_extraInitializers);
             __esDecorate(_a, null, _stores_decorators, { kind: "accessor", name: "stores", static: false, private: false, access: { has: obj => "stores" in obj, get: obj => obj.stores, set: (obj, value) => { obj.stores = value; } }, metadata: _metadata }, _stores_initializers, _stores_extraInitializers);
-            __esDecorate(_a, null, _register_decorators, { kind: "method", name: "register", static: false, private: false, access: { has: obj => "register" in obj, get: obj => obj.register }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(_a, null, _props_decorators, { kind: "accessor", name: "props", static: false, private: false, access: { has: obj => "props" in obj, get: obj => obj.props, set: (obj, value) => { obj.props = value; } }, metadata: _metadata }, _props_initializers, _props_extraInitializers);
+            __esDecorate(_a, null, _registerStores_decorators, { kind: "method", name: "registerStores", static: false, private: false, access: { has: obj => "registerStores" in obj, get: obj => obj.registerStores }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(_a, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         })(),
         _a;
 })();
 
-let Containers = (() => {
-    var _a, _Containers_containers_accessor_storage;
+let Root = (() => {
+    var _a, _Root_containers_accessor_storage, _Root_globalContainer_accessor_storage;
     let _instanceExtraInitializers = [];
     let _containers_decorators;
     let _containers_initializers = [];
     let _containers_extraInitializers = [];
-    let _register_decorators;
-    return _a = class Containers {
-            get containers() { return __classPrivateFieldGet(this, _Containers_containers_accessor_storage, "f"); }
-            set containers(value) { __classPrivateFieldSet(this, _Containers_containers_accessor_storage, value, "f"); }
-            register(stores) {
+    let _globalContainer_decorators;
+    let _globalContainer_initializers = [];
+    let _globalContainer_extraInitializers = [];
+    let _createContainer_decorators;
+    return _a = class Root {
+            get containers() { return __classPrivateFieldGet(this, _Root_containers_accessor_storage, "f"); }
+            set containers(value) { __classPrivateFieldSet(this, _Root_containers_accessor_storage, value, "f"); }
+            get globalContainer() { return __classPrivateFieldGet(this, _Root_globalContainer_accessor_storage, "f"); }
+            set globalContainer(value) { __classPrivateFieldSet(this, _Root_globalContainer_accessor_storage, value, "f"); }
+            createContainer(stores, props) {
                 const container = new Container();
-                for (const store of stores) {
-                    container.register(store);
-                }
+                container.registerStores(stores, props);
                 this.containers.push(container);
-                return container.id;
+                return container;
             }
-            resolve(id) {
+            resolveContainer(id) {
                 return this.containers.find((container) => container.id === id);
             }
             constructor() {
-                _Containers_containers_accessor_storage.set(this, (__runInitializers(this, _instanceExtraInitializers), __runInitializers(this, _containers_initializers, [])));
-                __runInitializers(this, _containers_extraInitializers);
+                _Root_containers_accessor_storage.set(this, (__runInitializers(this, _instanceExtraInitializers), __runInitializers(this, _containers_initializers, [])));
+                _Root_globalContainer_accessor_storage.set(this, (__runInitializers(this, _containers_extraInitializers), __runInitializers(this, _globalContainer_initializers, new Container())));
+                __runInitializers(this, _globalContainer_extraInitializers);
             }
         },
-        _Containers_containers_accessor_storage = new WeakMap(),
+        _Root_containers_accessor_storage = new WeakMap(),
+        _Root_globalContainer_accessor_storage = new WeakMap(),
         (() => {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
             _containers_decorators = [observable];
-            _register_decorators = [action];
+            _globalContainer_decorators = [observable];
+            _createContainer_decorators = [action];
             __esDecorate(_a, null, _containers_decorators, { kind: "accessor", name: "containers", static: false, private: false, access: { has: obj => "containers" in obj, get: obj => obj.containers, set: (obj, value) => { obj.containers = value; } }, metadata: _metadata }, _containers_initializers, _containers_extraInitializers);
-            __esDecorate(_a, null, _register_decorators, { kind: "method", name: "register", static: false, private: false, access: { has: obj => "register" in obj, get: obj => obj.register }, metadata: _metadata }, null, _instanceExtraInitializers);
+            __esDecorate(_a, null, _globalContainer_decorators, { kind: "accessor", name: "globalContainer", static: false, private: false, access: { has: obj => "globalContainer" in obj, get: obj => obj.globalContainer, set: (obj, value) => { obj.globalContainer = value; } }, metadata: _metadata }, _globalContainer_initializers, _globalContainer_extraInitializers);
+            __esDecorate(_a, null, _createContainer_decorators, { kind: "method", name: "createContainer", static: false, private: false, access: { has: obj => "createContainer" in obj, get: obj => obj.createContainer }, metadata: _metadata }, null, _instanceExtraInitializers);
             if (_metadata) Object.defineProperty(_a, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         })(),
         _a;
 })();
-const containers = new Containers();
+const root = new Root();
 
 const inject = (store) => {
-    return function (value, { kind, name }) {
+    return function (_, { kind, name }) {
+        if (kind !== 'accessor')
+            return;
         return {
             init() {
                 autorun(() => {
-                    var _a, _b;
+                    var _a;
                     // @ts-ignore
-                    const resolvedStore = (_b = (_a = this.container) === null || _a === void 0 ? void 0 : _a.resolve) === null || _b === void 0 ? void 0 : _b.call(_a, store);
+                    const resolvedStore = (_a = this === null || this === void 0 ? void 0 : this.container) === null || _a === void 0 ? void 0 : _a.resolveStore(store);
                     if (resolvedStore) {
                         // @ts-ignore
                         this[name] = resolvedStore;
@@ -186,13 +235,172 @@ const ContainerProvider = ({ id, children, }) => {
 
 function useInjection(store) {
     const id = useContext(ContainerContext);
-    const container = containers.resolve(id);
-    return container === null || container === void 0 ? void 0 : container.resolve(store);
+    const container = root.resolveContainer(id);
+    if (!container)
+        return;
+    return container.resolveStore(store);
 }
 
-function createInjectableComponent(Component, stores) {
-    return () => (React.createElement(ContainerProvider, { id: containers.register(stores) },
-        React.createElement(Component, null)));
+const createInjectableComponent = (Component, stores, props) => () => (React.createElement(ContainerProvider, { id: root.createContainer(stores, props).id },
+    React.createElement(Component, null)));
+
+function useGlobalInjection(store) {
+    return root.globalContainer.resolveStore(store);
 }
 
-export { Container, ContainerContext, ContainerProvider, Containers, containers, createInjectableComponent, inject, injectable, useInjection };
+const injectGlobal = (store, storeName) => {
+    return function (value, { kind, name }) {
+        return {
+            init() {
+                autorun(() => {
+                    var _a;
+                    if (!((_a = root === null || root === void 0 ? void 0 : root.globalContainer) === null || _a === void 0 ? void 0 : _a.resolveStore))
+                        return;
+                    // @ts-ignore
+                    this[name] = root.globalContainer.resolveStore(storeName || store);
+                });
+            },
+        };
+    };
+};
+
+// @ts-ignore
+let ProductsStore = (() => {
+    var _ProductsStore_name_accessor_storage;
+    let _classDecorators = [injectable];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _instanceExtraInitializers = [];
+    let _name_decorators;
+    let _name_initializers = [];
+    let _name_extraInitializers = [];
+    let _setName_decorators;
+    _classThis = class {
+        get name() { return __classPrivateFieldGet(this, _ProductsStore_name_accessor_storage, "f"); }
+        set name(value) { __classPrivateFieldSet(this, _ProductsStore_name_accessor_storage, value, "f"); }
+        setName(name) {
+            this.name = name;
+        }
+        constructor() {
+            _ProductsStore_name_accessor_storage.set(this, (__runInitializers(this, _instanceExtraInitializers), __runInitializers(this, _name_initializers, '')));
+            __runInitializers(this, _name_extraInitializers);
+        }
+    };
+    _ProductsStore_name_accessor_storage = new WeakMap();
+    __setFunctionName(_classThis, "ProductsStore");
+    (() => {
+        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
+        _name_decorators = [observable];
+        _setName_decorators = [action];
+        __esDecorate(_classThis, null, _name_decorators, { kind: "accessor", name: "name", static: false, private: false, access: { has: obj => "name" in obj, get: obj => obj.name, set: (obj, value) => { obj.name = value; } }, metadata: _metadata }, _name_initializers, _name_extraInitializers);
+        __esDecorate(_classThis, null, _setName_decorators, { kind: "method", name: "setName", static: false, private: false, access: { has: obj => "setName" in obj, get: obj => obj.setName }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+        _classThis = _classDescriptor.value;
+        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+        __runInitializers(_classThis, _classExtraInitializers);
+    })();
+    return _classThis;
+})();
+
+var Stores;
+(function (Stores) {
+    Stores["MY_CUSTOM_PRODUCTS_STORE"] = "myProductsStore";
+})(Stores || (Stores = {}));
+
+// @ts-ignore
+let UsersStore = (() => {
+    var _UsersStore_name_accessor_storage, _UsersStore_productsStore_accessor_storage, _UsersStore_productsStore2_accessor_storage, _UsersStore_productsStore3_accessor_storage;
+    let _classDecorators = [injectable];
+    let _classDescriptor;
+    let _classExtraInitializers = [];
+    let _classThis;
+    let _instanceExtraInitializers = [];
+    let _name_decorators;
+    let _name_initializers = [];
+    let _name_extraInitializers = [];
+    let _productsStore_decorators;
+    let _productsStore_initializers = [];
+    let _productsStore_extraInitializers = [];
+    let _productsStore2_decorators;
+    let _productsStore2_initializers = [];
+    let _productsStore2_extraInitializers = [];
+    let _productsStore3_decorators;
+    let _productsStore3_initializers = [];
+    let _productsStore3_extraInitializers = [];
+    let _setName_decorators;
+    _classThis = class {
+        get name() { return __classPrivateFieldGet(this, _UsersStore_name_accessor_storage, "f"); }
+        set name(value) { __classPrivateFieldSet(this, _UsersStore_name_accessor_storage, value, "f"); }
+        // @ts-ignore
+        get productsStore() { return __classPrivateFieldGet(this, _UsersStore_productsStore_accessor_storage, "f"); }
+        set productsStore(value) { __classPrivateFieldSet(this, _UsersStore_productsStore_accessor_storage, value, "f"); }
+        // @ts-ignore
+        get productsStore2() { return __classPrivateFieldGet(this, _UsersStore_productsStore2_accessor_storage, "f"); }
+        set productsStore2(value) { __classPrivateFieldSet(this, _UsersStore_productsStore2_accessor_storage, value, "f"); }
+        // @ts-ignore
+        get productsStore3() { return __classPrivateFieldGet(this, _UsersStore_productsStore3_accessor_storage, "f"); }
+        set productsStore3(value) { __classPrivateFieldSet(this, _UsersStore_productsStore3_accessor_storage, value, "f"); }
+        constructor(props) {
+            _UsersStore_name_accessor_storage.set(this, (__runInitializers(this, _instanceExtraInitializers), __runInitializers(this, _name_initializers, ''
+            // @ts-ignore
+            )));
+            _UsersStore_productsStore_accessor_storage.set(this, (__runInitializers(this, _name_extraInitializers), __runInitializers(this, _productsStore_initializers, void 0)));
+            _UsersStore_productsStore2_accessor_storage.set(this, (__runInitializers(this, _productsStore_extraInitializers), __runInitializers(this, _productsStore2_initializers, void 0)));
+            _UsersStore_productsStore3_accessor_storage.set(this, (__runInitializers(this, _productsStore2_extraInitializers), __runInitializers(this, _productsStore3_initializers, void 0)));
+            __runInitializers(this, _productsStore3_extraInitializers);
+            this.name = props.name;
+        }
+        setName(name) {
+            this.name = name;
+            this.productsStore.setName('Products name');
+            this.productsStore2.setName('Products name custom');
+            this.productsStore3.setName('Products name global');
+        }
+    };
+    _UsersStore_name_accessor_storage = new WeakMap();
+    _UsersStore_productsStore_accessor_storage = new WeakMap();
+    _UsersStore_productsStore2_accessor_storage = new WeakMap();
+    _UsersStore_productsStore3_accessor_storage = new WeakMap();
+    __setFunctionName(_classThis, "UsersStore");
+    (() => {
+        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
+        _name_decorators = [observable];
+        _productsStore_decorators = [inject(ProductsStore)];
+        _productsStore2_decorators = [inject(Stores.MY_CUSTOM_PRODUCTS_STORE)];
+        _productsStore3_decorators = [injectGlobal(ProductsStore)];
+        _setName_decorators = [action];
+        __esDecorate(_classThis, null, _name_decorators, { kind: "accessor", name: "name", static: false, private: false, access: { has: obj => "name" in obj, get: obj => obj.name, set: (obj, value) => { obj.name = value; } }, metadata: _metadata }, _name_initializers, _name_extraInitializers);
+        __esDecorate(_classThis, null, _productsStore_decorators, { kind: "accessor", name: "productsStore", static: false, private: false, access: { has: obj => "productsStore" in obj, get: obj => obj.productsStore, set: (obj, value) => { obj.productsStore = value; } }, metadata: _metadata }, _productsStore_initializers, _productsStore_extraInitializers);
+        __esDecorate(_classThis, null, _productsStore2_decorators, { kind: "accessor", name: "productsStore2", static: false, private: false, access: { has: obj => "productsStore2" in obj, get: obj => obj.productsStore2, set: (obj, value) => { obj.productsStore2 = value; } }, metadata: _metadata }, _productsStore2_initializers, _productsStore2_extraInitializers);
+        __esDecorate(_classThis, null, _productsStore3_decorators, { kind: "accessor", name: "productsStore3", static: false, private: false, access: { has: obj => "productsStore3" in obj, get: obj => obj.productsStore3, set: (obj, value) => { obj.productsStore3 = value; } }, metadata: _metadata }, _productsStore3_initializers, _productsStore3_extraInitializers);
+        __esDecorate(_classThis, null, _setName_decorators, { kind: "method", name: "setName", static: false, private: false, access: { has: obj => "setName" in obj, get: obj => obj.setName }, metadata: _metadata }, null, _instanceExtraInitializers);
+        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
+        _classThis = _classDescriptor.value;
+        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
+        __runInitializers(_classThis, _classExtraInitializers);
+    })();
+    return _classThis;
+})();
+
+const App = observer(() => {
+    const userStore = useInjection(UsersStore);
+    const productsStore = useInjection(ProductsStore);
+    const productsStore2 = useInjection(Stores.MY_CUSTOM_PRODUCTS_STORE);
+    useGlobalInjection(ProductsStore);
+    return (React.createElement("div", null, userStore === null || userStore === void 0 ? void 0 :
+        userStore.name,
+        React.createElement("br", null), productsStore === null || productsStore === void 0 ? void 0 :
+        productsStore.name,
+        React.createElement("br", null), productsStore2 === null || productsStore2 === void 0 ? void 0 :
+        productsStore2.name,
+        React.createElement("br", null),
+        React.createElement("button", { onClick: () => userStore === null || userStore === void 0 ? void 0 : userStore.setName('Joe') }, "Change name")));
+});
+
+const Profile = observer(() => {
+    const productsStore3 = useGlobalInjection(ProductsStore);
+    return React.createElement("div", null, productsStore3 === null || productsStore3 === void 0 ? void 0 : productsStore3.name);
+});
+
+export { App, Container, ContainerContext, ContainerProvider, ProductsStore, Profile, Root, Stores, UsersStore, createInjectableComponent, inject, injectGlobal, injectable, root, useGlobalInjection, useInjection };

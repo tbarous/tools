@@ -1,11 +1,14 @@
 import { useContext } from 'react'
 import { ContainerContext } from './ContainerProvider'
-import { containers } from './containers'
+import { root } from './root'
+import { IStoreClassOrDetailedStoreOrString } from './types'
 
-export function useInjection(store: any) {
+export function useInjection(store: IStoreClassOrDetailedStoreOrString) {
   const id = useContext(ContainerContext)
 
-  const container = containers.resolve(id)
+  const container = root.resolveContainer(id)
 
-  return container?.resolve(store)
+  if (!container) return
+
+  return container.resolveStore(store)
 }

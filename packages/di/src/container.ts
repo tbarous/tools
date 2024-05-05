@@ -1,21 +1,37 @@
-import { action, observable } from 'mobx'
+import { action, autorun, observable } from 'mobx'
+import {
+  IStoreClassOrDetailedStoreOrString,
+  IStoresMap,
+  IStoresToBeInjected,
+} from './types'
+import { getDetailedStore } from './utils'
 
 export class Container {
-  id: symbol = Symbol()
-  @observable accessor stores: Map<string, any> = new Map()
+  @observable accessor id: symbol = Symbol()
+  @observable accessor stores: IStoresMap = new Map()
+  @observable accessor props: any
 
   @action
-  register(store: any, props?: any) {
-    if (this.stores.has(store.name)) return
+  registerStores(stores: IStoresToBeInjected, props: any) {
+    for (const store of stores) {
+      const { name, store: Store } = getDetailedStore(store)
 
-    this.stores.set(store.name, new store({ container: this, ...props }))
+      if (this.stores.has(name) || !Store) return
+
+      const instance = new Store({
+        container: this,
+        ...props,
+      })
+
+      this.stores.set(name, instance)
+    }
   }
 
-  public resolve(store: any) {
-    const resolved = this.stores.get(store.name)
+  public resolveStore(store: IStoreClassOrDetailedStoreOrString) {
+    const { name } = getDetailedStore(store)
 
-    if (!resolved) return
+    if (!this.stores.has(name)) return
 
-    return resolved
+    return this.stores.get(name)
   }
 }
