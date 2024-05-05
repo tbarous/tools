@@ -1,10 +1,7 @@
-import { ClassAutoAccessorDecorator } from './types'
-import { autorun, runInAction } from 'mobx'
+import { autorun } from 'mobx'
 
-export const inject: (store: any) => ClassAutoAccessorDecorator = (
-  store: any
-) => {
-  return function (value, { kind, name }) {
+export const inject: any = (store: any) => {
+  return function (value: any, { kind, name }: any) {
     return {
       init() {
         autorun(() => {
